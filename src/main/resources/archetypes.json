@@ -1,0 +1,26 @@
+{
+  "Enforcer": {
+    "Accuracy": 1,
+    "Damage": 4,
+    "Speed": 2,
+    "Mastery": 0
+  },
+  "Elementalist": {
+    "Accuracy": 0,
+    "Damage": 2,
+    "Speed": 1,
+    "Mastery": 4
+  },
+  "Deadeye": {
+    "Accuracy": 4,
+    "Damage": 1,
+    "Speed": 0,
+    "Mastery": 2
+  },
+  "Guardian": {
+    "Accuracy": 2,
+    "Damage": 0,
+    "Speed": 4,
+    "Mastery": 1
+  }
+}
