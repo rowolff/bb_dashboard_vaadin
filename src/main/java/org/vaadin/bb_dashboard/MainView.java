@@ -13,6 +13,7 @@ import com.vaadin.flow.router.Route;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -41,6 +42,7 @@ public class MainView extends VerticalLayout {
 
     private int totalPoints = 3;
     private Map<String, Map<String, Integer>> archetypes;
+    private Map<String, CharacterClass> classes;
 
     private final TextField pointsField;
     private final AttributeComponent accuracy;
@@ -48,10 +50,11 @@ public class MainView extends VerticalLayout {
     private final AttributeComponent speed;
     private final AttributeComponent mastery;
     private final TextField archetypeBonusesLabel;
+    private final TextField classBonusesLabel;
     private final TextField spentPointsLabel;
 
     public MainView(GreetService service) {
-        loadArchetypes();
+        loadCharacterData();
 
         accuracy = new AttributeComponent("Accuracy", "ACC", this);
         accuracy.setAlignItems(Alignment.BASELINE);
@@ -86,7 +89,19 @@ public class MainView extends VerticalLayout {
         archetypeComboBox.setWidth("50%");
         archetypeBonusesLabel.setWidth("50%");
 
-        add(accuracy, damage, speed, mastery, pointsLayout, archetypeLayout);
+        ComboBox<String> classCombobox = new ComboBox<>("Class");
+        classCombobox.setItems(classes.keySet());
+        classCombobox.addValueChangeListener(event -> updateClassAttributes(event.getValue()));
+
+        classBonusesLabel = new TextField("Class Bonuses");
+        classBonusesLabel.setReadOnly(true);
+        HorizontalLayout classLayout = new HorizontalLayout(classCombobox, classBonusesLabel);
+        classLayout.setWidth("100%");
+        classLayout.setAlignItems(Alignment.CENTER);
+        classCombobox.setWidth("50%");
+        classBonusesLabel.setWidth("50%");
+
+        add(accuracy, damage, speed, mastery, pointsLayout, archetypeLayout, classLayout);
 
         // Use TextField for standard text input
         TextField textField = new TextField("Your name");
@@ -128,10 +143,26 @@ public class MainView extends VerticalLayout {
         this.updateSpentPoints();
     }
 
-    private void loadArchetypes() {
+    private void loadCharacterData() {
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream is = getClass().getResourceAsStream("/archetypes.json")) {
             archetypes = mapper.readValue(is, Map.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (InputStream is = getClass().getResourceAsStream("/classes.json")) {
+            Map<String, Map<String, Object>> rawClasses = mapper.readValue(is, Map.class);
+            classes = new HashMap<>();
+            for (Map.Entry<String, Map<String, Object>> entry : rawClasses.entrySet()) {
+                String className = entry.getKey();
+                Map<String, Integer> attributes = (Map<String, Integer>) entry.getValue().get("attributes");
+                Map<String, CharacterClass.Background> backgrounds = new HashMap<>();
+                Map<String, Map<String, Integer>> rawBackgrounds = (Map<String, Map<String, Integer>>) entry.getValue().get("backgrounds");
+                for (Map.Entry<String, Map<String, Integer>> bgEntry : rawBackgrounds.entrySet()) {
+                    backgrounds.put(bgEntry.getKey(), new CharacterClassImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
+                }
+                classes.put(className, new CharacterClassImpl(className, attributes, backgrounds));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -147,6 +178,20 @@ public class MainView extends VerticalLayout {
             archetypeBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
         } else {
             archetypeBonusesLabel.setValue("");
+        }
+    }
+
+    private void updateClassAttributes(String className) {
+        if (className != null && classes.containsKey(className)) {
+            CharacterClass characterClass = classes.get(className);
+            Map<String, Integer> bonuses = characterClass.getAttributes();
+            accuracy.setClassBonus(bonuses.get("Accuracy"));
+            damage.setClassBonus(bonuses.get("Damage"));
+            speed.setClassBonus(bonuses.get("Speed"));
+            mastery.setClassBonus(bonuses.get("Mastery"));
+            classBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+        } else {
+            classBonusesLabel.setValue("");
         }
     }
 

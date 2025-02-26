@@ -1,0 +1,82 @@
+{
+  "Assassin": {
+    "attributes": {
+      "Accuracy": 2,
+      "Damage": 0,
+      "Speed": 1,
+      "Mastery": 1
+    },
+    "backgrounds": {
+      "Challenger": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "The Blade": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Enigma": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Ghost": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "Leage of Assassins": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      }
+    }
+  },
+  "Berserker": {
+    "attributes": {
+      "Accuracy": 0,
+      "Damage": 2,
+      "Speed": 1,
+      "Mastery": 1
+    },
+    "backgrounds": {
+      "Brutality": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Leader": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Dynamite": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Inner Rage": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      },
+      "Demolitionist": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  }
+}
