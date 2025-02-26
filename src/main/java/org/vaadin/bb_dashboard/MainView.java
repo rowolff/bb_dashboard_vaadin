@@ -1,12 +1,16 @@
 package org.vaadin.bb_dashboard;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.impl.JreJsonObject;
+
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
@@ -31,7 +35,7 @@ public class MainView extends VerticalLayout {
     private final TextField backgroundBonusesLabel;
     private final TextField spentPointsLabel;
 
-    public MainView(GreetService service, CharacterService characterService) {
+    public MainView(CharacterService characterService) {
 
         accuracyBox = new AttributeComponent(ACCURACY, "ACC", this);
         accuracyBox.setAlignItems(Alignment.BASELINE);
@@ -74,12 +78,15 @@ public class MainView extends VerticalLayout {
         HorizontalLayout classLayout = createComboBoxLayout("Class", classComboBox, classBonusesLabel);
         HorizontalLayout backgroundLayout = createComboBoxLayout("Background", backgroundComboBox, backgroundBonusesLabel);
 
-        add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout);
+        HorizontalLayout characterList = new HorizontalLayout();
+        characterList.setWidth("100%");
+
+        add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout, characterList);
 
         TextField textField = new TextField("Your character's name");
         textField.addClassName("bordered");
 
-        Button button = new Button("Save Character", e -> add(new Paragraph(service.greet(textField.getValue()))));
+        Button button = new Button("Save Character", e -> saveCharacter(textField.getValue(), archetypeComboBox, classComboBox, backgroundComboBox, characterList));
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         button.addClickShortcut(Key.ENTER);
 
@@ -101,6 +108,38 @@ public class MainView extends VerticalLayout {
         totalPoints++;
         pointsField.setValue(String.valueOf(totalPoints));
         this.updateSpentPoints();
+    }
+
+    public void saveCharacter(String characterName, ComboBox<String> archetypeComboBox, ComboBox<String> classComboBox, ComboBox<String> backgroundComboBox, HorizontalLayout characterList) {
+        JsonObject characterData = Json.createObject();
+        characterData.put("name", characterName);
+        characterData.put("archetype", archetypeComboBox.getValue());
+        characterData.put("class", classComboBox.getValue());
+        characterData.put("background", backgroundComboBox.getValue());
+        characterData.put("accuracy", accuracyBox.getSpentPoints());
+        characterData.put("damage", damageBox.getSpentPoints());
+        characterData.put("speed", speedBox.getSpentPoints());
+        characterData.put("mastery", masteryBox.getSpentPoints());
+
+        Page page = getUI().get().getPage();
+        page.executeJs("localStorage.setItem($0, JSON.stringify($1));", "char." + characterName, characterData);
+
+        characterList.add(new Button(characterName, e -> loadCharacter(characterName, archetypeComboBox, classComboBox, backgroundComboBox)));
+    }
+
+    public void loadCharacter(String characterName, ComboBox<String> archetypeComboBox, ComboBox<String> classComboBox, ComboBox<String> backgroundComboBox) {
+        Page page = getUI().get().getPage();
+        page.executeJs("return JSON.parse(localStorage.getItem($0));", "char." + characterName)
+                .then(jsonValue -> {
+                    JsonObject characterData = ((JreJsonObject) jsonValue);
+                    archetypeComboBox.setValue(characterData.getString("archetype"));
+                    classComboBox.setValue(characterData.getString("class"));
+                    backgroundComboBox.setValue(characterData.getString("background"));
+                    accuracyBox.setSpentPoints((int) characterData.getNumber("accuracy"));
+                    damageBox.setSpentPoints((int) characterData.getNumber("damage"));
+                    speedBox.setSpentPoints((int) characterData.getNumber("speed"));
+                    masteryBox.setSpentPoints((int) characterData.getNumber("mastery"));
+                });
     }
 
     private HorizontalLayout createComboBoxLayout(String label, ComboBox<String> comboBox, TextField textField) {

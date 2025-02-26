@@ -106,6 +106,10 @@ public class AttributeComponent extends HorizontalLayout {
         return this.spentPoints;
     }
 
+    public void setSpentPoints(int points) {
+        this.spentPoints = points;
+    }
+
     public String getModifier() {
         return modifierField.getValue();
     }
