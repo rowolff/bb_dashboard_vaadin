@@ -1,6 +1,5 @@
 package org.vaadin.bb_dashboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -11,11 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Route
 public class MainView extends VerticalLayout {
@@ -25,8 +20,6 @@ public class MainView extends VerticalLayout {
     public static final String SPEED = "Speed";
     public static final String MASTERY = "Mastery";
     private int totalPoints = 3;
-    private Map<String, Map<String, Integer>> archetypes;
-    private final AtomicReference<Map<String, CharacterClass>> classes = new AtomicReference<>();
 
     private final TextField pointsField;
     private final AttributeComponent accuracyBox;
@@ -38,8 +31,7 @@ public class MainView extends VerticalLayout {
     private final TextField backgroundBonusesLabel;
     private final TextField spentPointsLabel;
 
-    public MainView(GreetService service) {
-        loadCharacterData();
+    public MainView(GreetService service, CharacterService characterService) {
 
         accuracyBox = new AttributeComponent(ACCURACY, "ACC", this);
         accuracyBox.setAlignItems(Alignment.BASELINE);
@@ -69,14 +61,14 @@ public class MainView extends VerticalLayout {
         ComboBox<String> classComboBox = new ComboBox<>();
         ComboBox<String> backgroundComboBox = new ComboBox<>();
 
-        archetypeComboBox.setItems(archetypes.keySet());
-        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue()));
+        archetypeComboBox.setItems(characterService.getArchetypes().keySet());
+        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue(), characterService));
 
-        classComboBox.setItems(classes.get().keySet());
-        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox));
+        classComboBox.setItems(characterService.getClasses().keySet());
+        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox, characterService));
 
         backgroundComboBox.setEnabled(false);
-        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox));
+        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox, characterService));
 
         HorizontalLayout archetypeLayout = createComboBoxLayout("Archetype", archetypeComboBox, archetypeBonusesLabel);
         HorizontalLayout classLayout = createComboBoxLayout("Class", classComboBox, classBonusesLabel);
@@ -84,10 +76,10 @@ public class MainView extends VerticalLayout {
 
         add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout);
 
-        TextField textField = new TextField("Your name");
+        TextField textField = new TextField("Your character's name");
         textField.addClassName("bordered");
 
-        Button button = new Button("Say hello", e -> add(new Paragraph(service.greet(textField.getValue()))));
+        Button button = new Button("Save Character", e -> add(new Paragraph(service.greet(textField.getValue()))));
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         button.addClickShortcut(Key.ENTER);
 
@@ -122,34 +114,9 @@ public class MainView extends VerticalLayout {
         return layout;
     }
 
-    private void loadCharacterData() {
-        ObjectMapper mapper = new ObjectMapper();
-        try (InputStream is = getClass().getResourceAsStream("/archetypes.json")) {
-            archetypes = mapper.readValue(is, Map.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (InputStream is = getClass().getResourceAsStream("/classes.json")) {
-            Map<String, Map<String, Object>> rawClasses = mapper.readValue(is, Map.class);
-            classes.set(new HashMap<>());
-            for (Map.Entry<String, Map<String, Object>> entry : rawClasses.entrySet()) {
-                String className = entry.getKey();
-                Map<String, Integer> attributes = (Map<String, Integer>) entry.getValue().get("attributes");
-                Map<String, CharacterClass.Background> backgrounds = new HashMap<>();
-                Map<String, Map<String, Integer>> rawBackgrounds = (Map<String, Map<String, Integer>>) entry.getValue().get("backgrounds");
-                for (Map.Entry<String, Map<String, Integer>> bgEntry : rawBackgrounds.entrySet()) {
-                    backgrounds.put(bgEntry.getKey(), new CharacterClassImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
-                }
-                classes.get().put(className, new CharacterClassImpl(className, attributes, backgrounds));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateArchetypeAttributes(String archetype) {
-        if (archetype != null && archetypes.containsKey(archetype)) {
-            Map<String, Integer> bonuses = archetypes.get(archetype);
+    private void updateArchetypeAttributes(String archetype, CharacterService characterService) {
+        if (archetype != null && characterService.getArchetypes().containsKey(archetype)) {
+            Map<String, Integer> bonuses = characterService.getArchetypeAttributes(archetype);
             accuracyBox.setArchetypeBonus(bonuses.get(ACCURACY));
             damageBox.setArchetypeBonus(bonuses.get(DAMAGE));
             speedBox.setArchetypeBonus(bonuses.get(SPEED));
@@ -160,13 +127,13 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox) {
+    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox, CharacterService characterService) {
         accuracyBox.setBackgroundBonus(0);
         damageBox.setBackgroundBonus(0);
         speedBox.setBackgroundBonus(0);
         masteryBox.setBackgroundBonus(0);
-        if (className != null && classes.get().containsKey(className)) {
-            CharacterClass characterClass = classes.get().get(className);
+        if (className != null && characterService.getClasses().containsKey(className)) {
+            CharacterClass characterClass = characterService.getClasses().get(className);
             Map<String, Integer> bonuses = characterClass.getAttributes();
             accuracyBox.setClassBonus(bonuses.get(ACCURACY));
             damageBox.setClassBonus(bonuses.get(DAMAGE));
@@ -181,11 +148,11 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox) {
+    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox, CharacterService characterService) {
         if (backgroundName != null) {
             String className = classCombobox.getValue();
-            if (className != null && classes.get().containsKey(className)) {
-                CharacterClass characterClass = classes.get().get(className);
+            if (className != null && characterService.getClasses().containsKey(className)) {
+                CharacterClass characterClass = characterService.getClasses().get(className);
                 CharacterClass.Background background = characterClass.getBackgrounds().get(backgroundName);
                 Map<String, Integer> bonuses = background.getAttributes();
                 accuracyBox.setBackgroundBonus(bonuses.get(ACCURACY));
