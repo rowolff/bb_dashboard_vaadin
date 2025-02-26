@@ -1,10 +1,13 @@
 package org.vaadin.bb_dashboard;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.impl.JreJsonArray;
 import elemental.json.impl.JreJsonObject;
 
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -23,6 +26,7 @@ public class MainView extends VerticalLayout {
     public static final String DAMAGE = "Damage";
     public static final String SPEED = "Speed";
     public static final String MASTERY = "Mastery";
+    public static final String CHAR_PREFIX = "char.";
     private int totalPoints = 3;
 
     private final TextField pointsField;
@@ -47,7 +51,7 @@ public class MainView extends VerticalLayout {
         masteryBox.setAlignItems(Alignment.BASELINE);
 
         pointsField = new TextField("Remaining Points");
-        pointsField.setValue(String.valueOf(totalPoints));
+        pointsField.setValue(String.valueOf(this.totalPoints));
         pointsField.setReadOnly(true);
         spentPointsLabel = new TextField("Spent Points");
         spentPointsLabel.setReadOnly(true);
@@ -81,7 +85,7 @@ public class MainView extends VerticalLayout {
         HorizontalLayout characterList = new HorizontalLayout();
         characterList.setWidth("100%");
 
-        add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout, characterList);
+        add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout);
 
         TextField textField = new TextField("Your character's name");
         textField.addClassName("bordered");
@@ -91,7 +95,10 @@ public class MainView extends VerticalLayout {
         button.addClickShortcut(Key.ENTER);
 
         addClassName("centered-content");
-        add(textField, button);
+        add(textField, button, characterList);
+
+        // Load all saved characters on page load
+        loadAllCharacters(characterList, archetypeComboBox, classComboBox, backgroundComboBox);
     }
 
     public boolean canSpendPoint() {
@@ -122,24 +129,48 @@ public class MainView extends VerticalLayout {
         characterData.put("mastery", masteryBox.getSpentPoints());
 
         Page page = getUI().get().getPage();
-        page.executeJs("localStorage.setItem($0, JSON.stringify($1));", "char." + characterName, characterData);
+        page.executeJs("localStorage.setItem($0, JSON.stringify($1));", CHAR_PREFIX + characterName, characterData);
 
         characterList.add(new Button(characterName, e -> loadCharacter(characterName, archetypeComboBox, classComboBox, backgroundComboBox)));
     }
 
     public void loadCharacter(String characterName, ComboBox<String> archetypeComboBox, ComboBox<String> classComboBox, ComboBox<String> backgroundComboBox) {
         Page page = getUI().get().getPage();
-        page.executeJs("return JSON.parse(localStorage.getItem($0));", "char." + characterName)
+        page.executeJs("return JSON.parse(localStorage.getItem($0));", CHAR_PREFIX + characterName)
                 .then(jsonValue -> {
                     JsonObject characterData = ((JreJsonObject) jsonValue);
                     archetypeComboBox.setValue(characterData.getString("archetype"));
                     classComboBox.setValue(characterData.getString("class"));
                     backgroundComboBox.setValue(characterData.getString("background"));
-                    accuracyBox.setSpentPoints((int) characterData.getNumber("accuracy"));
-                    damageBox.setSpentPoints((int) characterData.getNumber("damage"));
-                    speedBox.setSpentPoints((int) characterData.getNumber("speed"));
-                    masteryBox.setSpentPoints((int) characterData.getNumber("mastery"));
+
+                    int spentAccuracy = (int) characterData.getNumber("accuracy");
+                    int spentDamage = (int) characterData.getNumber("damage");
+                    int spentSpeed = (int) characterData.getNumber("speed");
+                    int spentMastery = (int) characterData.getNumber("mastery");
+                    this.totalPoints = 3 - spentAccuracy - spentDamage - spentSpeed - spentMastery;
+
+                    accuracyBox.setSpentPoints(spentAccuracy);
+                    damageBox.setSpentPoints(spentDamage);
+                    speedBox.setSpentPoints(spentSpeed);
+                    masteryBox.setSpentPoints(spentMastery);
+
+                    this.updateSpentPoints();
                 });
+    }
+
+    public void loadAllCharacters(HorizontalLayout characterList, ComboBox<String> archetypeComboBox, ComboBox<String> classComboBox, ComboBox<String> backgroundComboBox) {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            Page page = ui.getPage();
+            page.executeJs("return Object.keys(localStorage).filter(key => key.startsWith('" + CHAR_PREFIX +"'));")
+                    .then(jsonValue -> {
+                        JsonArray characters = ((JreJsonArray) jsonValue);
+                        for (int i = 0; i < characters.length(); i++) {
+                            String characterName = characters.getString(i).split(CHAR_PREFIX)[1];
+                            characterList.add(new Button(characterName, e -> loadCharacter(characterName, archetypeComboBox, classComboBox, backgroundComboBox)));
+                        }
+                    });
+        }
     }
 
     private HorizontalLayout createComboBoxLayout(String label, ComboBox<String> comboBox, TextField textField) {
@@ -207,6 +238,7 @@ public class MainView extends VerticalLayout {
 
     private void updateSpentPoints() {
         spentPointsLabel.setValue(this.formatBonuses(accuracyBox.getSpentPoints(), damageBox.getSpentPoints(), speedBox.getSpentPoints(), masteryBox.getSpentPoints()));
+        pointsField.setValue(String.valueOf(this.totalPoints));
     }
 
     private String formatBonuses(int accuracy, int damage, int speed, int mastery) {
