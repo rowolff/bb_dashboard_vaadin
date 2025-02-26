@@ -12,6 +12,7 @@ public class AttributeComponent extends HorizontalLayout {
     private int spentPoints = 0;
     private int archetypeBonus = 0;
     private int classBonus = 0;
+    private int backgroundBonus = 0;
 
     public AttributeComponent(String name, String shortName, MainView mainView) {
         this.mainView = mainView;
@@ -42,6 +43,11 @@ public class AttributeComponent extends HorizontalLayout {
 
     public void setClassBonus(int classBonus) {
         this.classBonus = classBonus;
+        updateValue();
+    }
+
+    public void setBackgroundBonus(int backgroundBonus) {
+        this.backgroundBonus = backgroundBonus;
         updateValue();
     }
 
@@ -93,7 +99,7 @@ public class AttributeComponent extends HorizontalLayout {
     }
 
     private int getTotal() {
-        return spentPoints + archetypeBonus + classBonus;
+        return spentPoints + archetypeBonus + classBonus + backgroundBonus;
     }
 
     public int getSpentPoints() {

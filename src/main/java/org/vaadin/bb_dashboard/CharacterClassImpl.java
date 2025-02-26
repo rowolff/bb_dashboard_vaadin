@@ -10,6 +10,11 @@ public record CharacterClassImpl(String name, Map<String, Integer> attributes,
         return attributes;
     }
 
+    @Override
+    public Map<String, Background> getBackgrounds() {
+        return backgrounds;
+    }
+
     public static class BackgroundImpl implements Background {
         private final String name;
         private final Map<String, Integer> attributes;

@@ -51,6 +51,7 @@ public class MainView extends VerticalLayout {
     private final AttributeComponent mastery;
     private final TextField archetypeBonusesLabel;
     private final TextField classBonusesLabel;
+    private final TextField backgroundBonusesLabel;
     private final TextField spentPointsLabel;
 
     public MainView(GreetService service) {
@@ -91,7 +92,19 @@ public class MainView extends VerticalLayout {
 
         ComboBox<String> classCombobox = new ComboBox<>("Class");
         classCombobox.setItems(classes.keySet());
-        classCombobox.addValueChangeListener(event -> updateClassAttributes(event.getValue()));
+        ComboBox<String> backgroundCombobox = new ComboBox<>("Background");
+        classCombobox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundCombobox));
+        backgroundCombobox.setEnabled(false);
+        backgroundCombobox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classCombobox));
+
+        backgroundBonusesLabel = new TextField("Background Bonuses");
+        backgroundBonusesLabel.setReadOnly(true);
+        HorizontalLayout backgroundLayout = new HorizontalLayout(backgroundCombobox, backgroundBonusesLabel);
+        backgroundLayout.setWidth("100%");
+        backgroundLayout.setAlignItems(Alignment.CENTER);
+        backgroundCombobox.setWidth("50%");
+        backgroundBonusesLabel.setWidth("50%");
+
 
         classBonusesLabel = new TextField("Class Bonuses");
         classBonusesLabel.setReadOnly(true);
@@ -101,7 +114,7 @@ public class MainView extends VerticalLayout {
         classCombobox.setWidth("50%");
         classBonusesLabel.setWidth("50%");
 
-        add(accuracy, damage, speed, mastery, pointsLayout, archetypeLayout, classLayout);
+        add(accuracy, damage, speed, mastery, pointsLayout, archetypeLayout, classLayout, backgroundLayout);
 
         // Use TextField for standard text input
         TextField textField = new TextField("Your name");
@@ -181,7 +194,11 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    private void updateClassAttributes(String className) {
+    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox) {
+        accuracy.setBackgroundBonus(0);
+        damage.setBackgroundBonus(0);
+        speed.setBackgroundBonus(0);
+        mastery.setBackgroundBonus(0);
         if (className != null && classes.containsKey(className)) {
             CharacterClass characterClass = classes.get(className);
             Map<String, Integer> bonuses = characterClass.getAttributes();
@@ -190,8 +207,29 @@ public class MainView extends VerticalLayout {
             speed.setClassBonus(bonuses.get("Speed"));
             mastery.setClassBonus(bonuses.get("Mastery"));
             classBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+
+            backgroundCombobox.setItems(characterClass.getBackgrounds().keySet());
+            backgroundCombobox.setEnabled(true);
         } else {
             classBonusesLabel.setValue("");
+        }
+    }
+
+    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox) {
+        if (backgroundName != null) {
+            String className = classCombobox.getValue();
+            if (className != null && classes.containsKey(className)) {
+                CharacterClass characterClass = classes.get(className);
+                CharacterClass.Background background = characterClass.getBackgrounds().get(backgroundName);
+                Map<String, Integer> bonuses = background.getAttributes();
+                accuracy.setBackgroundBonus(bonuses.get("Accuracy"));
+                damage.setBackgroundBonus(bonuses.get("Damage"));
+                speed.setBackgroundBonus(bonuses.get("Speed"));
+                mastery.setBackgroundBonus(bonuses.get("Mastery"));
+                backgroundBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+            }
+        } else {
+            backgroundBonusesLabel.setValue("");
         }
     }
 

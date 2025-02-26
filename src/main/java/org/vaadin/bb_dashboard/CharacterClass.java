@@ -5,7 +5,7 @@ import java.util.Map;
 public interface CharacterClass {
     String name();
     Map<String, Integer> getAttributes();
-    Map<String, Background> backgrounds();
+    Map<String, Background> getBackgrounds();
 
     interface Background {
         String getName();
