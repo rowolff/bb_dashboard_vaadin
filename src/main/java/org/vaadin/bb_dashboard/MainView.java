@@ -15,40 +15,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * A sample Vaadin view class.
- * <p>
- * To implement a Vaadin view just extend any Vaadin component and use @Route
- * annotation to announce it in a URL as a Spring managed bean.
- * <p>
- * A new instance of this class is created for every new user and every browser
- * tab/window.
- * <p>
- * The main view contains a text field for getting the user name and a button
- * that shows a greeting message in a notification.
- */
 @Route
 public class MainView extends VerticalLayout {
 
-    /**
-     * Construct a new Vaadin view.
-     * <p>
-     * Build the initial UI state for the user accessing the application.
-     *
-     * @param service
-     *            The message service. Automatically injected Spring managed bean.
-     */
-
+    public static final String ACCURACY = "Accuracy";
+    public static final String DAMAGE = "Damage";
+    public static final String SPEED = "Speed";
+    public static final String MASTERY = "Mastery";
     private int totalPoints = 3;
     private Map<String, Map<String, Integer>> archetypes;
-    private Map<String, CharacterClass> classes;
+    private final AtomicReference<Map<String, CharacterClass>> classes = new AtomicReference<>();
 
     private final TextField pointsField;
-    private final AttributeComponent accuracy;
-    private final AttributeComponent damage;
-    private final AttributeComponent speed;
-    private final AttributeComponent mastery;
+    private final AttributeComponent accuracyBox;
+    private final AttributeComponent damageBox;
+    private final AttributeComponent speedBox;
+    private final AttributeComponent masteryBox;
     private final TextField archetypeBonusesLabel;
     private final TextField classBonusesLabel;
     private final TextField backgroundBonusesLabel;
@@ -57,23 +41,18 @@ public class MainView extends VerticalLayout {
     public MainView(GreetService service) {
         loadCharacterData();
 
-        accuracy = new AttributeComponent("Accuracy", "ACC", this);
-        accuracy.setAlignItems(Alignment.BASELINE);
-        damage = new AttributeComponent("Damage", "DMG", this);
-        damage.setAlignItems(Alignment.BASELINE);
-        speed = new AttributeComponent("Speed", "SPD", this);
-        speed.setAlignItems(Alignment.BASELINE);
-        mastery = new AttributeComponent("Mastery", "MST", this);
-        mastery.setAlignItems(Alignment.BASELINE);
+        accuracyBox = new AttributeComponent(ACCURACY, "ACC", this);
+        accuracyBox.setAlignItems(Alignment.BASELINE);
+        damageBox = new AttributeComponent(DAMAGE, "DMG", this);
+        damageBox.setAlignItems(Alignment.BASELINE);
+        speedBox = new AttributeComponent(SPEED, "SPD", this);
+        speedBox.setAlignItems(Alignment.BASELINE);
+        masteryBox = new AttributeComponent(MASTERY, "MST", this);
+        masteryBox.setAlignItems(Alignment.BASELINE);
 
         pointsField = new TextField("Remaining Points");
         pointsField.setValue(String.valueOf(totalPoints));
         pointsField.setReadOnly(true);
-
-        ComboBox<String> archetypeComboBox = new ComboBox<>("Archetype");
-        archetypeComboBox.setItems(archetypes.keySet());
-        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue()));
-
         spentPointsLabel = new TextField("Spent Points");
         spentPointsLabel.setReadOnly(true);
         HorizontalLayout pointsLayout = new HorizontalLayout(pointsField, spentPointsLabel);
@@ -83,60 +62,36 @@ public class MainView extends VerticalLayout {
         spentPointsLabel.setWidth("50%");
 
         archetypeBonusesLabel = new TextField("Archetype Bonuses");
-        archetypeBonusesLabel.setReadOnly(true);
-        HorizontalLayout archetypeLayout = new HorizontalLayout(archetypeComboBox, archetypeBonusesLabel);
-        archetypeLayout.setWidth("100%");
-        archetypeLayout.setAlignItems(Alignment.CENTER);
-        archetypeComboBox.setWidth("50%");
-        archetypeBonusesLabel.setWidth("50%");
-
-        ComboBox<String> classCombobox = new ComboBox<>("Class");
-        classCombobox.setItems(classes.keySet());
-        ComboBox<String> backgroundCombobox = new ComboBox<>("Background");
-        classCombobox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundCombobox));
-        backgroundCombobox.setEnabled(false);
-        backgroundCombobox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classCombobox));
-
         backgroundBonusesLabel = new TextField("Background Bonuses");
-        backgroundBonusesLabel.setReadOnly(true);
-        HorizontalLayout backgroundLayout = new HorizontalLayout(backgroundCombobox, backgroundBonusesLabel);
-        backgroundLayout.setWidth("100%");
-        backgroundLayout.setAlignItems(Alignment.CENTER);
-        backgroundCombobox.setWidth("50%");
-        backgroundBonusesLabel.setWidth("50%");
-
-
         classBonusesLabel = new TextField("Class Bonuses");
-        classBonusesLabel.setReadOnly(true);
-        HorizontalLayout classLayout = new HorizontalLayout(classCombobox, classBonusesLabel);
-        classLayout.setWidth("100%");
-        classLayout.setAlignItems(Alignment.CENTER);
-        classCombobox.setWidth("50%");
-        classBonusesLabel.setWidth("50%");
 
-        add(accuracy, damage, speed, mastery, pointsLayout, archetypeLayout, classLayout, backgroundLayout);
+        ComboBox<String> archetypeComboBox = new ComboBox<>();
+        ComboBox<String> classComboBox = new ComboBox<>();
+        ComboBox<String> backgroundComboBox = new ComboBox<>();
 
-        // Use TextField for standard text input
+        archetypeComboBox.setItems(archetypes.keySet());
+        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue()));
+
+        classComboBox.setItems(classes.get().keySet());
+        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox));
+
+        backgroundComboBox.setEnabled(false);
+        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox));
+
+        HorizontalLayout archetypeLayout = createComboBoxLayout("Archetype", archetypeComboBox, archetypeBonusesLabel);
+        HorizontalLayout classLayout = createComboBoxLayout("Class", classComboBox, classBonusesLabel);
+        HorizontalLayout backgroundLayout = createComboBoxLayout("Background", backgroundComboBox, backgroundBonusesLabel);
+
+        add(accuracyBox, damageBox, speedBox, masteryBox, archetypeLayout, classLayout, backgroundLayout, pointsLayout);
+
         TextField textField = new TextField("Your name");
         textField.addClassName("bordered");
 
-        // Button click listeners can be defined as lambda expressions
-        Button button = new Button("Say hello", e -> {
-            add(new Paragraph(service.greet(textField.getValue())));
-        });
-
-        // Theme variants give you predefined extra styles for components.
-        // Example: Primary button has a more prominent look.
+        Button button = new Button("Say hello", e -> add(new Paragraph(service.greet(textField.getValue()))));
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        // You can specify keyboard shortcuts for buttons.
-        // Example: Pressing enter in this view clicks the Button.
         button.addClickShortcut(Key.ENTER);
 
-        // Use custom CSS classes to apply styling. This is defined in
-        // styles.css.
         addClassName("centered-content");
-
         add(textField, button);
     }
 
@@ -156,6 +111,17 @@ public class MainView extends VerticalLayout {
         this.updateSpentPoints();
     }
 
+    private HorizontalLayout createComboBoxLayout(String label, ComboBox<String> comboBox, TextField textField) {
+        comboBox.setLabel(label);
+        textField.setReadOnly(true);
+        HorizontalLayout layout = new HorizontalLayout(comboBox, textField);
+        layout.setWidth("100%");
+        layout.setAlignItems(Alignment.CENTER);
+        comboBox.setWidth("50%");
+        textField.setWidth("50%");
+        return layout;
+    }
+
     private void loadCharacterData() {
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream is = getClass().getResourceAsStream("/archetypes.json")) {
@@ -165,7 +131,7 @@ public class MainView extends VerticalLayout {
         }
         try (InputStream is = getClass().getResourceAsStream("/classes.json")) {
             Map<String, Map<String, Object>> rawClasses = mapper.readValue(is, Map.class);
-            classes = new HashMap<>();
+            classes.set(new HashMap<>());
             for (Map.Entry<String, Map<String, Object>> entry : rawClasses.entrySet()) {
                 String className = entry.getKey();
                 Map<String, Integer> attributes = (Map<String, Integer>) entry.getValue().get("attributes");
@@ -174,7 +140,7 @@ public class MainView extends VerticalLayout {
                 for (Map.Entry<String, Map<String, Integer>> bgEntry : rawBackgrounds.entrySet()) {
                     backgrounds.put(bgEntry.getKey(), new CharacterClassImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
                 }
-                classes.put(className, new CharacterClassImpl(className, attributes, backgrounds));
+                classes.get().put(className, new CharacterClassImpl(className, attributes, backgrounds));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -184,29 +150,29 @@ public class MainView extends VerticalLayout {
     private void updateArchetypeAttributes(String archetype) {
         if (archetype != null && archetypes.containsKey(archetype)) {
             Map<String, Integer> bonuses = archetypes.get(archetype);
-            accuracy.setArchetypeBonus(bonuses.get("Accuracy"));
-            damage.setArchetypeBonus(bonuses.get("Damage"));
-            speed.setArchetypeBonus(bonuses.get("Speed"));
-            mastery.setArchetypeBonus(bonuses.get("Mastery"));
-            archetypeBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+            accuracyBox.setArchetypeBonus(bonuses.get(ACCURACY));
+            damageBox.setArchetypeBonus(bonuses.get(DAMAGE));
+            speedBox.setArchetypeBonus(bonuses.get(SPEED));
+            masteryBox.setArchetypeBonus(bonuses.get(MASTERY));
+            archetypeBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
         } else {
             archetypeBonusesLabel.setValue("");
         }
     }
 
     private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox) {
-        accuracy.setBackgroundBonus(0);
-        damage.setBackgroundBonus(0);
-        speed.setBackgroundBonus(0);
-        mastery.setBackgroundBonus(0);
-        if (className != null && classes.containsKey(className)) {
-            CharacterClass characterClass = classes.get(className);
+        accuracyBox.setBackgroundBonus(0);
+        damageBox.setBackgroundBonus(0);
+        speedBox.setBackgroundBonus(0);
+        masteryBox.setBackgroundBonus(0);
+        if (className != null && classes.get().containsKey(className)) {
+            CharacterClass characterClass = classes.get().get(className);
             Map<String, Integer> bonuses = characterClass.getAttributes();
-            accuracy.setClassBonus(bonuses.get("Accuracy"));
-            damage.setClassBonus(bonuses.get("Damage"));
-            speed.setClassBonus(bonuses.get("Speed"));
-            mastery.setClassBonus(bonuses.get("Mastery"));
-            classBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+            accuracyBox.setClassBonus(bonuses.get(ACCURACY));
+            damageBox.setClassBonus(bonuses.get(DAMAGE));
+            speedBox.setClassBonus(bonuses.get(SPEED));
+            masteryBox.setClassBonus(bonuses.get(MASTERY));
+            classBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
 
             backgroundCombobox.setItems(characterClass.getBackgrounds().keySet());
             backgroundCombobox.setEnabled(true);
@@ -218,15 +184,15 @@ public class MainView extends VerticalLayout {
     private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox) {
         if (backgroundName != null) {
             String className = classCombobox.getValue();
-            if (className != null && classes.containsKey(className)) {
-                CharacterClass characterClass = classes.get(className);
+            if (className != null && classes.get().containsKey(className)) {
+                CharacterClass characterClass = classes.get().get(className);
                 CharacterClass.Background background = characterClass.getBackgrounds().get(backgroundName);
                 Map<String, Integer> bonuses = background.getAttributes();
-                accuracy.setBackgroundBonus(bonuses.get("Accuracy"));
-                damage.setBackgroundBonus(bonuses.get("Damage"));
-                speed.setBackgroundBonus(bonuses.get("Speed"));
-                mastery.setBackgroundBonus(bonuses.get("Mastery"));
-                backgroundBonusesLabel.setValue(this.formatBonuses(bonuses.get("Accuracy"), bonuses.get("Damage"), bonuses.get("Speed"), bonuses.get("Mastery")));
+                accuracyBox.setBackgroundBonus(bonuses.get(ACCURACY));
+                damageBox.setBackgroundBonus(bonuses.get(DAMAGE));
+                speedBox.setBackgroundBonus(bonuses.get(SPEED));
+                masteryBox.setBackgroundBonus(bonuses.get(MASTERY));
+                backgroundBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
             }
         } else {
             backgroundBonusesLabel.setValue("");
@@ -234,7 +200,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void updateSpentPoints() {
-        spentPointsLabel.setValue(this.formatBonuses(accuracy.getSpentPoints(), damage.getSpentPoints(), speed.getSpentPoints(), mastery.getSpentPoints()));
+        spentPointsLabel.setValue(this.formatBonuses(accuracyBox.getSpentPoints(), damageBox.getSpentPoints(), speedBox.getSpentPoints(), masteryBox.getSpentPoints()));
     }
 
     private String formatBonuses(int accuracy, int damage, int speed, int mastery) {
