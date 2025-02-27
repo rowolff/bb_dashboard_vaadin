@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard;
+package org.vaadin.bb_dashboard.character;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -9,12 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class CharacterService {
+public class CharacterResourceService {
 
     private Map<String, Map<String, Integer>> archetypes;
-    private Map<String, CharacterClass> classes;
+    private Map<String, CharacterResourceDto> classes;
 
-    public CharacterService() {
+    public CharacterResourceService() {
         loadCharacterData();
     }
 
@@ -31,12 +31,12 @@ public class CharacterService {
             for (Map.Entry<String, Map<String, Object>> entry : rawClasses.entrySet()) {
                 String className = entry.getKey();
                 Map<String, Integer> attributes = (Map<String, Integer>) entry.getValue().get("attributes");
-                Map<String, CharacterClass.Background> backgrounds = new HashMap<>();
+                Map<String, CharacterResourceDto.Background> backgrounds = new HashMap<>();
                 Map<String, Map<String, Integer>> rawBackgrounds = (Map<String, Map<String, Integer>>) entry.getValue().get("backgrounds");
                 for (Map.Entry<String, Map<String, Integer>> bgEntry : rawBackgrounds.entrySet()) {
-                    backgrounds.put(bgEntry.getKey(), new CharacterClassImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
+                    backgrounds.put(bgEntry.getKey(), new CharacterResourceDtoImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
                 }
-                classes.put(className, new CharacterClassImpl(className, attributes, backgrounds));
+                classes.put(className, new CharacterResourceDtoImpl(className, attributes, backgrounds));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -47,7 +47,7 @@ public class CharacterService {
         return archetypes;
     }
 
-    public Map<String, CharacterClass> getClasses() {
+    public Map<String, CharacterResourceDto> getClasses() {
         return classes;
     }
 

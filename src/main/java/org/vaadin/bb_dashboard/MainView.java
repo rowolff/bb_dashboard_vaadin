@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.vaadin.bb_dashboard.character.CharacterResourceDto;
+import org.vaadin.bb_dashboard.character.CharacterResourceService;
 
 import static org.vaadin.bb_dashboard.Constants.*;
 
@@ -45,7 +47,7 @@ public class MainView extends VerticalLayout {
     private final ComboBox<String> backgroundComboBox = new ComboBox<>();
     private final HorizontalLayout characterList = new HorizontalLayout();
 
-    public MainView(CharacterService characterService) {
+    public MainView(CharacterResourceService characterResourceService) {
 
         accuracyBox = new AttributeComponent(ACCURACY, "ACC", this);
         accuracyBox.setAlignItems(Alignment.BASELINE);
@@ -67,16 +69,16 @@ public class MainView extends VerticalLayout {
         pointsField.setWidth("50%");
         spentPointsLabel.setWidth("50%");
 
-        archetypeComboBox.setItems(characterService.getArchetypes().keySet());
-        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue(), characterService));
+        archetypeComboBox.setItems(characterResourceService.getArchetypes().keySet());
+        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue(), characterResourceService));
         archetypeBonusesLabel = new TextField(ARCHETYPE + " Bonuses");
 
-        classComboBox.setItems(characterService.getClasses().keySet());
-        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox, characterService));
+        classComboBox.setItems(characterResourceService.getClasses().keySet());
+        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox, characterResourceService));
         backgroundBonusesLabel = new TextField(BACKGROUND + " Bonuses");
 
         backgroundComboBox.setEnabled(false);
-        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox, characterService));
+        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox, characterResourceService));
         classBonusesLabel = new TextField(CLASS + " Bonuses");
 
         HorizontalLayout archetypeLayout = createComboBoxLayout(ARCHETYPE, archetypeComboBox, archetypeBonusesLabel);
@@ -185,9 +187,9 @@ public class MainView extends VerticalLayout {
         return layout;
     }
 
-    private void updateArchetypeAttributes(String archetype, CharacterService characterService) {
-        if (archetype != null && characterService.getArchetypes().containsKey(archetype)) {
-            Map<String, Integer> bonuses = characterService.getArchetypeAttributes(archetype);
+    private void updateArchetypeAttributes(String archetype, CharacterResourceService characterResourceService) {
+        if (archetype != null && characterResourceService.getArchetypes().containsKey(archetype)) {
+            Map<String, Integer> bonuses = characterResourceService.getArchetypeAttributes(archetype);
             accuracyBox.setArchetypeBonus(bonuses.get(ACCURACY));
             damageBox.setArchetypeBonus(bonuses.get(DAMAGE));
             speedBox.setArchetypeBonus(bonuses.get(SPEED));
@@ -198,33 +200,33 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox, CharacterService characterService) {
+    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox, CharacterResourceService characterResourceService) {
         accuracyBox.setBackgroundBonus(0);
         damageBox.setBackgroundBonus(0);
         speedBox.setBackgroundBonus(0);
         masteryBox.setBackgroundBonus(0);
-        if (className != null && characterService.getClasses().containsKey(className)) {
-            CharacterClass characterClass = characterService.getClasses().get(className);
-            Map<String, Integer> bonuses = characterClass.getAttributes();
+        if (className != null && characterResourceService.getClasses().containsKey(className)) {
+            CharacterResourceDto characterResourceDto = characterResourceService.getClasses().get(className);
+            Map<String, Integer> bonuses = characterResourceDto.getAttributes();
             accuracyBox.setClassBonus(bonuses.get(ACCURACY));
             damageBox.setClassBonus(bonuses.get(DAMAGE));
             speedBox.setClassBonus(bonuses.get(SPEED));
             masteryBox.setClassBonus(bonuses.get(MASTERY));
             classBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
 
-            backgroundCombobox.setItems(characterClass.getBackgrounds().keySet());
+            backgroundCombobox.setItems(characterResourceDto.getBackgrounds().keySet());
             backgroundCombobox.setEnabled(true);
         } else {
             classBonusesLabel.setValue("");
         }
     }
 
-    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox, CharacterService characterService) {
+    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox, CharacterResourceService characterResourceService) {
         if (backgroundName != null) {
             String className = classCombobox.getValue();
-            if (className != null && characterService.getClasses().containsKey(className)) {
-                CharacterClass characterClass = characterService.getClasses().get(className);
-                CharacterClass.Background background = characterClass.getBackgrounds().get(backgroundName);
+            if (className != null && characterResourceService.getClasses().containsKey(className)) {
+                CharacterResourceDto characterResourceDto = characterResourceService.getClasses().get(className);
+                CharacterResourceDto.Background background = characterResourceDto.getBackgrounds().get(backgroundName);
                 Map<String, Integer> bonuses = background.getAttributes();
                 accuracyBox.setBackgroundBonus(bonuses.get(ACCURACY));
                 damageBox.setBackgroundBonus(bonuses.get(DAMAGE));

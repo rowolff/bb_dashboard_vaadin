@@ -1,9 +1,9 @@
-package org.vaadin.bb_dashboard;
+package org.vaadin.bb_dashboard.character;
 
 import java.io.Serializable;
 import java.util.Map;
 
-public interface CharacterClass extends Serializable {
+public interface CharacterResourceDto extends Serializable {
     String name();
     Map<String, Integer> getAttributes();
     Map<String, Background> getBackgrounds();
