@@ -22,7 +22,7 @@ import java.util.Map;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.vaadin.bb_dashboard.character.Character;
-import org.vaadin.bb_dashboard.character.CharacterResourceDto;
+import org.vaadin.bb_dashboard.character.CharacterResource;
 import org.vaadin.bb_dashboard.character.CharacterResourceService;
 
 import static org.vaadin.bb_dashboard.Constants.*;
@@ -231,8 +231,8 @@ public class MainView extends VerticalLayout {
 
     private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox) {
         if (className != null && loader.getClasses().containsKey(className)) {
-            CharacterResourceDto characterResourceDto = loader.getClasses().get(className);
-            Map<String, Integer> bonuses = characterResourceDto.getAttributes();
+            CharacterResource characterResource = loader.getClasses().get(className);
+            Map<String, Integer> bonuses = characterResource.getAttributes();
 
             character.setCharClass(Character.Stats.builder()
                     .name(className)
@@ -248,7 +248,7 @@ public class MainView extends VerticalLayout {
                     character.getCharClass().getSpeed(),
                     character.getCharClass().getMastery()));
 
-            backgroundCombobox.setItems(characterResourceDto.getBackgrounds().keySet());
+            backgroundCombobox.setItems(characterResource.getBackgrounds().keySet());
             backgroundCombobox.setEnabled(true);
         } else {
             classBonusesLabel.clear();
@@ -260,8 +260,8 @@ public class MainView extends VerticalLayout {
         if (backgroundName != null) {
             String className = character.getCharClass().getName();
             if (className != null && loader.getClasses().containsKey(className)) {
-                CharacterResourceDto characterResourceDto = loader.getClasses().get(className);
-                CharacterResourceDto.Background loadedBackground = characterResourceDto.getBackgrounds().get(backgroundName);
+                CharacterResource characterResource = loader.getClasses().get(className);
+                CharacterResource.Background loadedBackground = characterResource.getBackgrounds().get(backgroundName);
                 if (loadedBackground == null) {
                     backgroundBonusesLabel.setValue("");
                     return;

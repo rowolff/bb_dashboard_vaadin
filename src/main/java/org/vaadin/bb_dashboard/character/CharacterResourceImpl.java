@@ -2,8 +2,8 @@ package org.vaadin.bb_dashboard.character;
 
 import java.util.Map;
 
-public record CharacterResourceDtoImpl(String name, Map<String, Integer> attributes,
-                                       Map<String, Background> backgrounds) implements CharacterResourceDto {
+public record CharacterResourceImpl(String name, Map<String, Integer> attributes,
+                                    Map<String, Background> backgrounds) implements CharacterResource {
 
     @Override
     public Map<String, Integer> getAttributes() {

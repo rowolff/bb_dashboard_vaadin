@@ -13,7 +13,7 @@ import java.util.Map;
 public class CharacterResourceService implements Serializable {
 
     private Map<String, Map<String, Integer>> archetypes;
-    private Map<String, CharacterResourceDto> classes;
+    private Map<String, CharacterResource> classes;
 
     public CharacterResourceService() {
         loadCharacterData();
@@ -32,12 +32,12 @@ public class CharacterResourceService implements Serializable {
             for (Map.Entry<String, Map<String, Object>> entry : rawClasses.entrySet()) {
                 String className = entry.getKey();
                 Map<String, Integer> attributes = (Map<String, Integer>) entry.getValue().get("attributes");
-                Map<String, CharacterResourceDto.Background> backgrounds = new HashMap<>();
+                Map<String, CharacterResource.Background> backgrounds = new HashMap<>();
                 Map<String, Map<String, Integer>> rawBackgrounds = (Map<String, Map<String, Integer>>) entry.getValue().get("backgrounds");
                 for (Map.Entry<String, Map<String, Integer>> bgEntry : rawBackgrounds.entrySet()) {
-                    backgrounds.put(bgEntry.getKey(), new CharacterResourceDtoImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
+                    backgrounds.put(bgEntry.getKey(), new CharacterResourceImpl.BackgroundImpl(bgEntry.getKey(), bgEntry.getValue()));
                 }
-                classes.put(className, new CharacterResourceDtoImpl(className, attributes, backgrounds));
+                classes.put(className, new CharacterResourceImpl(className, attributes, backgrounds));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -48,7 +48,7 @@ public class CharacterResourceService implements Serializable {
         return archetypes;
     }
 
-    public Map<String, CharacterResourceDto> getClasses() {
+    public Map<String, CharacterResource> getClasses() {
         return classes;
     }
 
