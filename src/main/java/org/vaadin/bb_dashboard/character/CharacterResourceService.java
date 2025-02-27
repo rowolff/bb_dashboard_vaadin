@@ -5,11 +5,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class CharacterResourceService {
+public class CharacterResourceService implements Serializable {
 
     private Map<String, Map<String, Integer>> archetypes;
     private Map<String, CharacterResourceDto> classes;

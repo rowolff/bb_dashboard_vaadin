@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.vaadin.bb_dashboard.character.Character;
 import org.vaadin.bb_dashboard.character.CharacterResourceDto;
 import org.vaadin.bb_dashboard.character.CharacterResourceService;
 
@@ -29,12 +30,14 @@ import static org.vaadin.bb_dashboard.Constants.*;
 @Route
 public class MainView extends VerticalLayout {
 
-    private int totalPoints = 3;
+    private Character character = new Character();
 
     private final AttributeComponent accuracyBox;
     private final AttributeComponent damageBox;
     private final AttributeComponent speedBox;
     private final AttributeComponent masteryBox;
+
+    private final CharacterResourceService loader;
 
     private final TextField archetypeBonusesLabel;
     private final TextField classBonusesLabel;
@@ -45,21 +48,23 @@ public class MainView extends VerticalLayout {
     private final ComboBox<String> archetypeComboBox = new ComboBox<>();
     private final ComboBox<String> classComboBox = new ComboBox<>();
     private final ComboBox<String> backgroundComboBox = new ComboBox<>();
+
     private final HorizontalLayout characterList = new HorizontalLayout();
 
     public MainView(CharacterResourceService characterResourceService) {
+        loader = characterResourceService;
 
-        accuracyBox = new AttributeComponent(ACCURACY, "ACC", this);
+        accuracyBox = new AttributeComponent(ACCURACY, "ACC", character, this);
         accuracyBox.setAlignItems(Alignment.BASELINE);
-        damageBox = new AttributeComponent(DAMAGE, "DMG", this);
+        damageBox = new AttributeComponent(DAMAGE, "DMG", character, this);
         damageBox.setAlignItems(Alignment.BASELINE);
-        speedBox = new AttributeComponent(SPEED, "SPD", this);
+        speedBox = new AttributeComponent(SPEED, "SPD", character, this);
         speedBox.setAlignItems(Alignment.BASELINE);
-        masteryBox = new AttributeComponent(MASTERY, "MST", this);
+        masteryBox = new AttributeComponent(MASTERY, "MST", character, this);
         masteryBox.setAlignItems(Alignment.BASELINE);
 
         pointsField = new TextField("Remaining Points");
-        pointsField.setValue(String.valueOf(totalPoints));
+        pointsField.setValue(String.valueOf(character.getAvailablePointsToSpend()));
         pointsField.setReadOnly(true);
         spentPointsLabel = new TextField("Spent Points");
         spentPointsLabel.setReadOnly(true);
@@ -69,16 +74,20 @@ public class MainView extends VerticalLayout {
         pointsField.setWidth("50%");
         spentPointsLabel.setWidth("50%");
 
+
         archetypeComboBox.setItems(characterResourceService.getArchetypes().keySet());
-        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue(), characterResourceService));
+        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue()));
         archetypeBonusesLabel = new TextField(ARCHETYPE + " Bonuses");
 
         classComboBox.setItems(characterResourceService.getClasses().keySet());
-        classComboBox.addValueChangeListener(event -> updateClassAttributes(event.getValue(), backgroundComboBox, characterResourceService));
+        classComboBox.addValueChangeListener(event -> {
+            character.setBackground(Character.Stats.builder().build());
+            updateClassAttributes(event.getValue(), backgroundComboBox);
+        });
         backgroundBonusesLabel = new TextField(BACKGROUND + " Bonuses");
 
         backgroundComboBox.setEnabled(false);
-        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue(), classComboBox, characterResourceService));
+        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue()));
         classBonusesLabel = new TextField(CLASS + " Bonuses");
 
         HorizontalLayout archetypeLayout = createComboBoxLayout(ARCHETYPE, archetypeComboBox, archetypeBonusesLabel);
@@ -103,32 +112,17 @@ public class MainView extends VerticalLayout {
         loadAllCharacters();
     }
 
-    public boolean canSpendPoint() {
-        return totalPoints > 0;
-    }
-
-    public void spendPoint() {
-        totalPoints--;
-        pointsField.setValue(String.valueOf(totalPoints));
-        updateSpentPoints();
-    }
-
-    public void refundPoint() {
-        totalPoints++;
-        pointsField.setValue(String.valueOf(totalPoints));
-        updateSpentPoints();
-    }
-
     public void saveCharacter(String characterName) {
+        character.setCharacterName(characterName);
         JsonObject characterData = Json.createObject();
-        characterData.put("name", characterName);
-        characterData.put(ARCHETYPE, archetypeComboBox.getValue());
-        characterData.put(CLASS, classComboBox.getValue());
-        characterData.put(BACKGROUND, backgroundComboBox.getValue());
-        characterData.put(ACCURACY, accuracyBox.getSpentPoints());
-        characterData.put(DAMAGE, damageBox.getSpentPoints());
-        characterData.put(SPEED, speedBox.getSpentPoints());
-        characterData.put(MASTERY, masteryBox.getSpentPoints());
+        characterData.put("name", character.getCharacterName());
+        characterData.put(ARCHETYPE, character.getArchetype().getName());
+        characterData.put(CLASS, character.getCharClass().getName());
+        characterData.put(BACKGROUND, character.getBackground().getName());
+        characterData.put(ACCURACY, character.getSpentPoints().getAccuracy());
+        characterData.put(DAMAGE, character.getSpentPoints().getDamage());
+        characterData.put(SPEED, character.getSpentPoints().getSpeed());
+        characterData.put(MASTERY, character.getSpentPoints().getMastery());
 
         Page page = getUI().get().getPage();
         page.executeJs("localStorage.setItem($0, JSON.stringify($1));", CHAR_PREFIX + characterName, characterData);
@@ -141,22 +135,34 @@ public class MainView extends VerticalLayout {
         page.executeJs("return JSON.parse(localStorage.getItem($0));", CHAR_PREFIX + characterName)
                 .then(jsonValue -> {
                     JsonObject characterData = ((JreJsonObject) jsonValue);
-                    archetypeComboBox.setValue(characterData.getString(ARCHETYPE));
-                    classComboBox.setValue(characterData.getString(CLASS));
-                    backgroundComboBox.setValue(characterData.getString(BACKGROUND));
+                    character.reset();
+
+                    updateArchetypeAttributes(characterData.getString(ARCHETYPE));
+                    updateClassAttributes(characterData.getString(CLASS), backgroundComboBox);
 
                     int spentAccuracy = (int) characterData.getNumber(ACCURACY);
                     int spentDamage = (int) characterData.getNumber(DAMAGE);
                     int spentSpeed = (int) characterData.getNumber(SPEED);
                     int spentMastery = (int) characterData.getNumber(MASTERY);
-                    totalPoints = 3 - spentAccuracy - spentDamage - spentSpeed - spentMastery;
+                    int pointsToSpend = new Character().getAvailablePointsToSpend() - spentAccuracy - spentDamage - spentSpeed - spentMastery;
 
-                    accuracyBox.setSpentPoints(spentAccuracy);
-                    damageBox.setSpentPoints(spentDamage);
-                    speedBox.setSpentPoints(spentSpeed);
-                    masteryBox.setSpentPoints(spentMastery);
+                    character.setAvailablePointsToSpend(pointsToSpend);
+
+                    character.setSpentPoints(Character.Stats.builder()
+                            .accuracy(spentAccuracy)
+                            .damage(spentDamage)
+                            .speed(spentSpeed)
+                            .mastery(spentMastery)
+                            .build());
+
+                    archetypeComboBox.setValue(character.getArchetype().getName());
+                    classComboBox.setValue(character.getCharClass().getName());
+
+                    updateBackgroundAttributes(characterData.getString(BACKGROUND));
+                    backgroundComboBox.setValue(character.getBackground().getName());
 
                     updateSpentPoints();
+                    updateAllBoxes();
                 });
     }
 
@@ -175,6 +181,16 @@ public class MainView extends VerticalLayout {
         }
     }
 
+    public void updateSpentPoints() {
+        pointsField.setValue(String.valueOf(character.getAvailablePointsToSpend()));
+        spentPointsLabel.setValue(this.formatBonuses(
+                character.getSpentPoints().getAccuracy(),
+                character.getSpentPoints().getDamage(),
+                character.getSpentPoints().getSpeed(),
+                character.getSpentPoints().getMastery())
+        );
+    }
+
     @NotNull
     private HorizontalLayout createComboBoxLayout(String label, @NotNull ComboBox<String> comboBox, @NotNull TextField textField) {
         comboBox.setLabel(label);
@@ -184,70 +200,110 @@ public class MainView extends VerticalLayout {
         layout.setAlignItems(Alignment.CENTER);
         comboBox.setWidth("50%");
         textField.setWidth("50%");
+
+        addComboBoxListeners(comboBox);
+
         return layout;
     }
 
-    private void updateArchetypeAttributes(String archetype, CharacterResourceService characterResourceService) {
-        if (archetype != null && characterResourceService.getArchetypes().containsKey(archetype)) {
-            Map<String, Integer> bonuses = characterResourceService.getArchetypeAttributes(archetype);
-            accuracyBox.setArchetypeBonus(bonuses.get(ACCURACY));
-            damageBox.setArchetypeBonus(bonuses.get(DAMAGE));
-            speedBox.setArchetypeBonus(bonuses.get(SPEED));
-            masteryBox.setArchetypeBonus(bonuses.get(MASTERY));
-            archetypeBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
+    private void updateArchetypeAttributes(String archetypeName) {
+        if (archetypeName != null && loader.getArchetypes().containsKey(archetypeName)) {
+            Map<String, Integer> bonuses = loader.getArchetypeAttributes(archetypeName);
+
+            character.setArchetype(Character.Stats.builder()
+                    .name(archetypeName)
+                    .accuracy(bonuses.get(ACCURACY))
+                    .damage(bonuses.get(DAMAGE))
+                    .speed(bonuses.get(SPEED))
+                    .mastery(bonuses.get(MASTERY))
+                    .build());
+
+            archetypeBonusesLabel.setValue(this.formatBonuses(
+                    character.getArchetype().getAccuracy(),
+                    character.getArchetype().getDamage(),
+                    character.getArchetype().getSpeed(),
+                    character.getArchetype().getMastery()));
         } else {
-            archetypeBonusesLabel.setValue("");
+            archetypeBonusesLabel.clear();
+            archetypeComboBox.clear();
         }
     }
 
-    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox, CharacterResourceService characterResourceService) {
-        accuracyBox.setBackgroundBonus(0);
-        damageBox.setBackgroundBonus(0);
-        speedBox.setBackgroundBonus(0);
-        masteryBox.setBackgroundBonus(0);
-        if (className != null && characterResourceService.getClasses().containsKey(className)) {
-            CharacterResourceDto characterResourceDto = characterResourceService.getClasses().get(className);
+    private void updateClassAttributes(String className, ComboBox<String> backgroundCombobox) {
+        if (className != null && loader.getClasses().containsKey(className)) {
+            CharacterResourceDto characterResourceDto = loader.getClasses().get(className);
             Map<String, Integer> bonuses = characterResourceDto.getAttributes();
-            accuracyBox.setClassBonus(bonuses.get(ACCURACY));
-            damageBox.setClassBonus(bonuses.get(DAMAGE));
-            speedBox.setClassBonus(bonuses.get(SPEED));
-            masteryBox.setClassBonus(bonuses.get(MASTERY));
-            classBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
+
+            character.setCharClass(Character.Stats.builder()
+                    .name(className)
+                    .accuracy(bonuses.get(ACCURACY))
+                    .damage(bonuses.get(DAMAGE))
+                    .speed(bonuses.get(SPEED))
+                    .mastery(bonuses.get(MASTERY))
+                    .build());
+
+            classBonusesLabel.setValue(this.formatBonuses(
+                    character.getCharClass().getAccuracy(),
+                    character.getCharClass().getDamage(),
+                    character.getCharClass().getSpeed(),
+                    character.getCharClass().getMastery()));
 
             backgroundCombobox.setItems(characterResourceDto.getBackgrounds().keySet());
             backgroundCombobox.setEnabled(true);
         } else {
-            classBonusesLabel.setValue("");
+            classBonusesLabel.clear();
+            classComboBox.clear();
         }
     }
 
-    private void updateBackgroundAttributes(String backgroundName, ComboBox<String> classCombobox, CharacterResourceService characterResourceService) {
+    private void updateBackgroundAttributes(String backgroundName) {
         if (backgroundName != null) {
-            String className = classCombobox.getValue();
-            if (className != null && characterResourceService.getClasses().containsKey(className)) {
-                CharacterResourceDto characterResourceDto = characterResourceService.getClasses().get(className);
-                CharacterResourceDto.Background background = characterResourceDto.getBackgrounds().get(backgroundName);
-                Map<String, Integer> bonuses = background.getAttributes();
-                accuracyBox.setBackgroundBonus(bonuses.get(ACCURACY));
-                damageBox.setBackgroundBonus(bonuses.get(DAMAGE));
-                speedBox.setBackgroundBonus(bonuses.get(SPEED));
-                masteryBox.setBackgroundBonus(bonuses.get(MASTERY));
-                backgroundBonusesLabel.setValue(this.formatBonuses(bonuses.get(ACCURACY), bonuses.get(DAMAGE), bonuses.get(SPEED), bonuses.get(MASTERY)));
+            String className = character.getCharClass().getName();
+            if (className != null && loader.getClasses().containsKey(className)) {
+                CharacterResourceDto characterResourceDto = loader.getClasses().get(className);
+                CharacterResourceDto.Background loadedBackground = characterResourceDto.getBackgrounds().get(backgroundName);
+                if (loadedBackground == null) {
+                    backgroundBonusesLabel.setValue("");
+                    return;
+                }
+                Map<String, Integer> bonuses = loadedBackground.getAttributes();
+
+                character.setBackground(Character.Stats.builder()
+                        .name(backgroundName)
+                        .accuracy(bonuses.get(ACCURACY))
+                        .damage(bonuses.get(DAMAGE))
+                        .speed(bonuses.get(SPEED))
+                        .mastery(bonuses.get(MASTERY))
+                        .build());
+
+                backgroundBonusesLabel.setValue(this.formatBonuses(
+                        character.getBackground().getAccuracy(),
+                        character.getBackground().getDamage(),
+                        character.getBackground().getSpeed(),
+                        character.getBackground().getMastery()));
             }
         } else {
-            backgroundBonusesLabel.setValue("");
+            backgroundBonusesLabel.clear();
+            backgroundComboBox.clear();
         }
-    }
-
-    private void updateSpentPoints() {
-        spentPointsLabel.setValue(this.formatBonuses(accuracyBox.getSpentPoints(), damageBox.getSpentPoints(), speedBox.getSpentPoints(), masteryBox.getSpentPoints()));
-        pointsField.setValue(String.valueOf(totalPoints));
     }
 
     @NotNull
     @Contract(pure = true)
     private String formatBonuses(int accuracy, int damage, int speed, int mastery) {
         return "ACC +" + accuracy + ", DMG +" + damage + ", SPD +" + speed + ", MST +" + mastery;
+    }
+
+
+    private void addComboBoxListeners(ComboBox<String> comboBox) {
+        comboBox.addValueChangeListener(event -> updateAllBoxes());
+    }
+
+    private void updateAllBoxes() {
+        accuracyBox.updateFields();
+        damageBox.updateFields();
+        speedBox.updateFields();
+        masteryBox.updateFields();
     }
 
 }
