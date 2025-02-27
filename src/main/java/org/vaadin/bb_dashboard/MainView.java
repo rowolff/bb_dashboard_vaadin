@@ -30,7 +30,7 @@ import static org.vaadin.bb_dashboard.Constants.*;
 @Route
 public class MainView extends VerticalLayout {
 
-    private Character character = new Character();
+    private final Character character = new Character();
 
     private final AttributeComponent accuracyBox;
     private final AttributeComponent damageBox;
