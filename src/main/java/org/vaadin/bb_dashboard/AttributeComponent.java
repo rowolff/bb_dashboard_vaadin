@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
+import org.jetbrains.annotations.NotNull;
 import org.vaadin.bb_dashboard.character.Character;
 
 public class AttributeComponent extends HorizontalLayout {
@@ -13,24 +14,21 @@ public class AttributeComponent extends HorizontalLayout {
     private final Character character;
     private final String attributeName;
 
-    public AttributeComponent(String attributeName, String shortName, Character character, MainView mainView) {
+    public AttributeComponent(String attributeName, String shortName, @NotNull Character character, MainView mainView) {
 
         this.character = character;
         this.attributeName = attributeName;
 
-        int totalStat = character.getTotalStatByName(attributeName);
-        int modifier = totalStat / 2;
-
         TextField nameField = new TextField("Name");
-        nameField.setValue(attributeName + " (" + shortName + ")");
+        nameField.setValue(String.format("%s (%s)", attributeName, shortName));
         nameField.setReadOnly(true);
 
         valueField = new TextField("Value");
-        valueField.setValue(String.valueOf(totalStat));
+        valueField.setValue(String.valueOf(character.getTotalStatByName(attributeName)));
         valueField.setReadOnly(true);
 
         modifierField = new TextField("Modifier");
-        modifierField.setValue(String.valueOf(modifier));
+        modifierField.setValue(String.valueOf(character.getModifierByName(attributeName)));
         modifierField.setReadOnly(true);
 
         Button incrementButton = new Button("+", e -> {
@@ -48,9 +46,7 @@ public class AttributeComponent extends HorizontalLayout {
     }
 
     public void updateFields() {
-        int totalStat = character.getTotalStatByName(attributeName);
-        int updatedModifier = totalStat / 2;
-        valueField.setValue(String.valueOf(totalStat));
-        modifierField.setValue(String.valueOf(updatedModifier));
+        valueField.setValue(String.valueOf(character.getTotalStatByName(attributeName)));
+        modifierField.setValue(String.valueOf(character.getModifierByName(attributeName)));
     }
 }

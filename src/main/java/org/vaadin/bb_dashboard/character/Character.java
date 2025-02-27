@@ -12,6 +12,7 @@ import static org.vaadin.bb_dashboard.Constants.ACCURACY;
 import static org.vaadin.bb_dashboard.Constants.DAMAGE;
 import static org.vaadin.bb_dashboard.Constants.MASTERY;
 import static org.vaadin.bb_dashboard.Constants.SPEED;
+import static org.vaadin.bb_dashboard.Constants.UNEXPECTED_VALUE;
 
 @Data
 public class Character implements Serializable {
@@ -27,7 +28,7 @@ public class Character implements Serializable {
 
     @Data
     @Builder
-    public static class Stats {
+    public static class Stats implements Serializable {
         private String name;
         private int accuracy;
         private int damage;
@@ -50,8 +51,12 @@ public class Character implements Serializable {
             case DAMAGE -> getTotalStats().damage;
             case SPEED -> getTotalStats().speed;
             case MASTERY -> getTotalStats().mastery;
-            default -> throw new IllegalStateException("Unexpected value: " + name);
+            default -> throw new IllegalStateException(String.format(UNEXPECTED_VALUE, name));
         };
+    }
+
+    public int getModifierByName(@NotNull String name) {
+        return getTotalStatByName(name) / 2;
     }
 
     public void spendPoint(@NotNull String statName) {
@@ -70,7 +75,7 @@ public class Character implements Serializable {
                     spentPoints.mastery++;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + statName);
+                    throw new IllegalStateException(String.format(UNEXPECTED_VALUE, statName));
             }
             availablePointsToSpend--;
         }
@@ -92,7 +97,7 @@ public class Character implements Serializable {
                     spentPoints.mastery--;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected value: " + statName);
+                    throw new IllegalStateException(String.format(UNEXPECTED_VALUE, statName));
             }
             availablePointsToSpend++;
         }

@@ -1,5 +1,7 @@
 package org.vaadin.bb_dashboard.character;
 
+import lombok.Getter;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 @Service
 public class CharacterResourceService implements Serializable {
 
@@ -42,14 +45,6 @@ public class CharacterResourceService implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public Map<String, Map<String, Integer>> getArchetypes() {
-        return archetypes;
-    }
-
-    public Map<String, CharacterResource> getClasses() {
-        return classes;
     }
 
     public Map<String, Integer> getArchetypeAttributes(String archetype) {
