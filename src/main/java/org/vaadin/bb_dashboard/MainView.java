@@ -19,8 +19,8 @@ import com.vaadin.flow.router.Route;
 
 import java.util.Map;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.lang.Contract;
 import org.vaadin.bb_dashboard.character.Character;
 import org.vaadin.bb_dashboard.character.CharacterResource;
 import org.vaadin.bb_dashboard.character.CharacterResourceService;
@@ -303,7 +303,7 @@ public class MainView extends VerticalLayout {
     }
 
     @NotNull
-    @Contract(pure = true)
+    @Contract
     private String formatBonuses(int accuracy, int damage, int speed, int mastery) {
         return String.format("ACC +%d, DMG +%d, SPD +%d, MST +%d", accuracy, damage, speed, mastery);
     }

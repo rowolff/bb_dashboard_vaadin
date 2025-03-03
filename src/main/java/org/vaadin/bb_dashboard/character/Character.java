@@ -1,12 +1,11 @@
 package org.vaadin.bb_dashboard.character;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
-
-import org.jetbrains.annotations.NotNull;
 
 import static org.vaadin.bb_dashboard.Constants.ACCURACY;
 import static org.vaadin.bb_dashboard.Constants.DAMAGE;
