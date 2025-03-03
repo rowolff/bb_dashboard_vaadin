@@ -67,7 +67,8 @@ public class MainView extends VerticalLayout {
 
         // ARCHETYPE SELECTION
         archetypeComboBox.setItems(loader.getArchetypes().keySet());
-        archetypeComboBox.addValueChangeListener(event -> updateArchetypeAttributes(event.getValue()));
+        archetypeComboBox.addValueChangeListener(
+                event -> updateArchetypeAttributes(event.getValue()));
         archetypeBonusesLabel = new TextField(String.format(BONUS_LABEL, ARCHETYPE, BONUSES));
         HorizontalLayout archetypeLayout = createComboBoxLayout(ARCHETYPE, archetypeComboBox, archetypeBonusesLabel);
 
@@ -82,7 +83,8 @@ public class MainView extends VerticalLayout {
 
         // BACKGROUND SELECTION
         backgroundComboBox.setEnabled(false);
-        backgroundComboBox.addValueChangeListener(event -> updateBackgroundAttributes(event.getValue()));
+        backgroundComboBox.addValueChangeListener(event ->
+                updateBackgroundAttributes(event.getValue()));
         backgroundBonusesLabel = new TextField(String.format(BONUS_LABEL, BACKGROUND, BONUSES));
         HorizontalLayout backgroundLayout = createComboBoxLayout(BACKGROUND, backgroundComboBox, backgroundBonusesLabel);
 
@@ -102,7 +104,8 @@ public class MainView extends VerticalLayout {
         TextField characterNameInput = new TextField("Your character's name");
         characterNameInput.addClassName("bordered");
 
-        Button saveButton = new Button("Save Character", e -> saveCharacter(characterNameInput.getValue()));
+        Button saveButton = new Button("Save Character", e ->
+                saveCharacter(characterNameInput.getValue()));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.addClickShortcut(Key.ENTER);
 
@@ -160,7 +163,11 @@ public class MainView extends VerticalLayout {
                         int spentDamage = (int) characterData.getNumber(DAMAGE);
                         int spentSpeed = (int) characterData.getNumber(SPEED);
                         int spentMastery = (int) characterData.getNumber(MASTERY);
-                        int pointsToSpend = new Character().getAvailablePointsToSpend() - spentAccuracy - spentDamage - spentSpeed - spentMastery;
+                        int pointsToSpend = new Character().getAvailablePointsToSpend()
+                                - spentAccuracy
+                                - spentDamage
+                                - spentSpeed
+                                - spentMastery;
 
                         character.setAvailablePointsToSpend(pointsToSpend);
 
@@ -198,13 +205,15 @@ public class MainView extends VerticalLayout {
         UI ui = UI.getCurrent();
         if (ui != null) {
             Page page = ui.getPage();
-            page.executeJs("localStorage.setItem($0, JSON.stringify($1));", CHAR_PREFIX + characterName, characterData);
+            page.executeJs("localStorage.setItem($0, JSON.stringify($1));", CHAR_PREFIX
+                    + characterName, characterData);
             characterList.add(new Button(characterName, e -> loadCharacter(characterName)));
         }
     }
 
     @NotNull
-    private HorizontalLayout createComboBoxLayout(String label, @NotNull ComboBox<String> comboBox, @NotNull TextField textField) {
+    private HorizontalLayout createComboBoxLayout(
+            String label, @NotNull ComboBox<String> comboBox, @NotNull TextField textField) {
         comboBox.setLabel(label);
         textField.setReadOnly(true);
         HorizontalLayout layout = new HorizontalLayout(comboBox, textField);
