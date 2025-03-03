@@ -7,16 +7,12 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-import static org.vaadin.bb_dashboard.Constants.ACCURACY;
-import static org.vaadin.bb_dashboard.Constants.DAMAGE;
-import static org.vaadin.bb_dashboard.Constants.MASTERY;
-import static org.vaadin.bb_dashboard.Constants.SPEED;
-import static org.vaadin.bb_dashboard.Constants.UNEXPECTED_VALUE;
+import static org.vaadin.bb_dashboard.Constants.*;
 
 @Data
 public class Character implements Serializable {
 
-    private int availablePointsToSpend = 3;
+    private int availablePointsToSpend = MAX_SPENDABLE_POINTS;
 
     private String characterName = "";
 
@@ -81,7 +77,9 @@ public class Character implements Serializable {
     }
 
     public void refundPoint(@NotNull String statName) {
-        if (availablePointsToSpend < 3) {
+        boolean statPositive = this.getTotalStatByName(statName) > 0;
+        boolean canRefund = availablePointsToSpend < MAX_SPENDABLE_POINTS;
+        if (statPositive && canRefund) {
             switch (statName) {
                 case ACCURACY:
                     spentPoints.accuracy--;
@@ -103,7 +101,7 @@ public class Character implements Serializable {
     }
 
     public void reset() {
-        availablePointsToSpend = 3;
+        availablePointsToSpend = MAX_SPENDABLE_POINTS;
         spentPoints = new Stats("", 0, 0, 0, 0);
         archetype = new Stats("", 0, 0, 0, 0);
         charClass = new Stats("", 0, 0, 0, 0);

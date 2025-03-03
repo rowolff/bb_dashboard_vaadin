@@ -15,4 +15,5 @@ public class Constants {
     public static final String BONUS_LABEL ="%s %s";
     public static final String BONUSES = "Bonuses";
     public static final String UNEXPECTED_VALUE = "Unexpected value: %s";
+    public static final int MAX_SPENDABLE_POINTS = 3;
 }
