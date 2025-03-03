@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard;
+package de.rowolff.bb_dashboard.utils;
 
 public class Constants {
 

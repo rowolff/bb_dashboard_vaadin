@@ -1,5 +1,6 @@
-package org.vaadin.bb_dashboard;
+package de.rowolff.bb_dashboard;
 
+import de.rowolff.bb_dashboard.components.AttributeComponent;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -21,11 +22,11 @@ import java.util.Map;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Contract;
-import org.vaadin.bb_dashboard.character.Character;
-import org.vaadin.bb_dashboard.character.CharacterResource;
-import org.vaadin.bb_dashboard.character.CharacterResourceService;
+import de.rowolff.bb_dashboard.character.Character;
+import de.rowolff.bb_dashboard.character.CharacterResource;
+import de.rowolff.bb_dashboard.character.CharacterResourceService;
 
-import static org.vaadin.bb_dashboard.Constants.*;
+import static de.rowolff.bb_dashboard.utils.Constants.*;
 
 @Route
 public class MainView extends VerticalLayout {

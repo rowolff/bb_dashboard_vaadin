@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard;
+package de.rowolff.bb_dashboard;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;

@@ -1,11 +1,12 @@
-package org.vaadin.bb_dashboard;
+package de.rowolff.bb_dashboard.components;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
+import de.rowolff.bb_dashboard.MainView;
 import jakarta.validation.constraints.NotNull;
-import org.vaadin.bb_dashboard.character.Character;
+import de.rowolff.bb_dashboard.character.Character;
 
 public class AttributeComponent extends HorizontalLayout {
 

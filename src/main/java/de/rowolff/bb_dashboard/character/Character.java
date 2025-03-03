@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard.character;
+package de.rowolff.bb_dashboard.character;
 
 
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-import static org.vaadin.bb_dashboard.Constants.*;
+import static de.rowolff.bb_dashboard.utils.Constants.*;
 
 @Data
 public class Character implements Serializable {

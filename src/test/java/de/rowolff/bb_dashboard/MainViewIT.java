@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard;
+package de.rowolff.bb_dashboard;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;

@@ -1,4 +1,4 @@
-package org.vaadin.bb_dashboard.character;
+package de.rowolff.bb_dashboard.character;
 
 import lombok.Getter;
 
