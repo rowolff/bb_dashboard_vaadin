@@ -78,5 +78,337 @@
         "Mastery": 0
       }
     }
+  },
+  "Commando": {
+    "attributes": {
+      "Accuracy": 1,
+      "Damage": 1,
+      "Speed": 0,
+      "Mastery": 2
+    },
+    "backgrounds": {
+      "Divorcee": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Revengeance": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Veteran": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "Whistleblower": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      },
+      "Company Man": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  },
+  "Gunzerker": {
+    "attributes": {
+      "Accuracy": 1,
+      "Damage": 2,
+      "Speed": 0,
+      "Mastery": 1
+    },
+    "backgrounds": {
+      "Roids": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Curiosity Kills": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      },
+      "Saviour": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Gotta Go Fast": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "Cowboy": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  },
+  "Hunter": {
+    "attributes": {
+      "Accuracy": 2,
+      "Damage": 1,
+      "Speed": 0,
+      "Mastery": 1
+    },
+    "backgrounds": {
+      "Prize Shot": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Tracker": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Partner In Crime": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Silence Schmilence": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Money Is Not Everything": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      }
+    }
+  },
+  "Mechromancer": {
+    "attributes": {
+      "Accuracy": 0,
+      "Damage": 1,
+      "Speed": 2,
+      "Mastery": 1
+    },
+    "backgrounds": {
+      "Anti-Bully": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Well-Read": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Wealthy Parents": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": -1
+      },
+      "Accidental Murderer": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Clumsy": {
+        "Accuracy": 2,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  },
+  "Psycho": {
+    "attributes": {
+      "Accuracy": 1,
+      "Damage": 2,
+      "Speed": 1,
+      "Mastery": 2
+    },
+    "backgrounds": {
+      "YOU'RE DEAD!": {
+        "Accuracy": 2,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "THUD!": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      },
+      "GRIND GRIND KILL!": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "BLOOD!": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "STOP TALKING TO ME!": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  },
+  "Soldier": {
+    "attributes": {
+      "Accuracy": 1,
+      "Damage": 0,
+      "Speed": 1,
+      "Mastery": 2
+    },
+    "backgrounds": {
+      "Crimson": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Commander": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Medic": {
+        "Accuracy": 0,
+        "Damage": -1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Parkour Paladin": {
+        "Accuracy": -1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Not a People Person": {
+        "Accuracy": 0,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      }
+    }
+  },
+  "Siren (Lightwalk)": {
+    "attributes": {
+      "Accuracy": 1,
+      "Damage": 1,
+      "Speed": 2,
+      "Mastery": 0
+    },
+    "backgrounds": {
+      "Living Weapon": {
+        "Accuracy": -1,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Hidden Past": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "Public Figure": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Fistfull of Hell": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Social Anxiety": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Gunwitch": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      }
+    }
+  },
+  "Siren (Phaselock)": {
+    "attributes": {
+      "Accuracy": 0,
+      "Damage": 1,
+      "Speed": 1,
+      "Mastery": 2
+    },
+    "backgrounds": {
+      "Living Weapon": {
+        "Accuracy": -1,
+        "Damage": 1,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Hidden Past": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 1,
+        "Mastery": 0
+      },
+      "Public Figure": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Fistfull of Hell": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Social Anxiety": {
+        "Accuracy": 1,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 0
+      },
+      "Gunwitch": {
+        "Accuracy": 0,
+        "Damage": 0,
+        "Speed": 0,
+        "Mastery": 1
+      }
+    }
   }
 }

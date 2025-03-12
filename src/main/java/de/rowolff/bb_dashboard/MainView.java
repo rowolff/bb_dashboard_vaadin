@@ -315,7 +315,8 @@ public class MainView extends VerticalLayout {
     @NotNull
     @Contract
     private String formatBonuses(int accuracy, int damage, int speed, int mastery) {
-        return String.format("ACC +%d, DMG +%d, SPD +%d, MST +%d", accuracy, damage, speed, mastery);
+        String formattedBonuses = String.format("ACC +%d, DMG +%d, SPD +%d, MST +%d", accuracy, damage, speed, mastery);
+        return formattedBonuses.replace("+-", "-");
     }
 
     private void addComboBoxListeners(@NotNull ComboBox<String> comboBox) {
